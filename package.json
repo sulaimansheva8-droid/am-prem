@@ -1,11 +1,9 @@
 {
-  "name": "ujang-karbu-alight-motion",
+  "name": "am-prem",
   "version": "1.0.0",
-  "scripts": {
-    "start": "node api/index.js"
-  },
+  "main": "index.js",
   "dependencies": {
-    "axios": "^1.6.0",
-    "express": "^4.18.2"
+    "axios": "^1.7.0",
+    "express": "^4.19.2"
   }
 }
