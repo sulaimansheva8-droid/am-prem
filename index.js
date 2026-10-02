@@ -1,5 +1,6 @@
 const express = require('express');
 const axios = require('axios');
+const path = require('path');
 
 const app = express();
 
@@ -15,12 +16,17 @@ const HEADERS = {
 // Middleware untuk parsing JSON
 app.use(express.json());
 
+// Halaman utama
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
 // Endpoint: Send Magic Link
 app.post('/api/satriam/send-link', async (req, res) => {
     try {
-        const response = await axios.post(`${BASE_URL}/api/satriam/send-link`, req.body, { 
+        const response = await axios.post(`${BASE_URL}/api/satriam/send-link`, req.body, {
             headers: HEADERS,
-            timeout: 15000 
+            timeout: 15000
         });
         res.json(response.data);
     } catch (error) {
@@ -32,9 +38,9 @@ app.post('/api/satriam/send-link', async (req, res) => {
 // Endpoint: Verify Magic Link
 app.post('/api/satriam/verify-link', async (req, res) => {
     try {
-        const response = await axios.post(`${BASE_URL}/api/satriam/verify-link`, req.body, { 
+        const response = await axios.post(`${BASE_URL}/api/satriam/verify-link`, req.body, {
             headers: HEADERS,
-            timeout: 15000 
+            timeout: 15000
         });
         res.json(response.data);
     } catch (error) {
