@@ -15,19 +15,10 @@ const HEADERS = {
 
 app.use(express.json());
 
-// Route utama
-app.get('/', (req, res) => {
-    res.json({
-        success: true,
-        message: 'SatriaM API Proxy is running',
-        endpoints: {
-            sendLink: 'POST /api/satriam/send-link',
-            verifyLink: 'POST /api/satriam/verify-link'
-        }
-    });
-});
+// Menampilkan index.html dari GitHub
+app.use(express.static(__dirname));
 
-// Send Magic Link
+// API Send Magic Link
 app.post('/api/satriam/send-link', async (req, res) => {
     try {
         const response = await axios.post(
@@ -40,21 +31,18 @@ app.post('/api/satriam/send-link', async (req, res) => {
         );
 
         res.status(response.status).json(response.data);
-    } catch (error) {
-        const errorMsg =
-            error.response?.data ||
-            {
-                success: false,
-                error: error.message
-            };
 
-        res
-            .status(error.response?.status || 500)
-            .json(errorMsg);
+    } catch (error) {
+        const errorMsg = error.response?.data || {
+            success: false,
+            error: error.message
+        };
+
+        res.status(error.response?.status || 500).json(errorMsg);
     }
 });
 
-// Verify Magic Link
+// API Verify Magic Link
 app.post('/api/satriam/verify-link', async (req, res) => {
     try {
         const response = await axios.post(
@@ -67,17 +55,14 @@ app.post('/api/satriam/verify-link', async (req, res) => {
         );
 
         res.status(response.status).json(response.data);
-    } catch (error) {
-        const errorMsg =
-            error.response?.data ||
-            {
-                success: false,
-                error: error.message
-            };
 
-        res
-            .status(error.response?.status || 500)
-            .json(errorMsg);
+    } catch (error) {
+        const errorMsg = error.response?.data || {
+            success: false,
+            error: error.message
+        };
+
+        res.status(error.response?.status || 500).json(errorMsg);
     }
 });
 
