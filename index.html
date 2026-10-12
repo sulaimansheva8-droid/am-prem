@@ -29,13 +29,10 @@ html{scroll-behavior:smooth}
 body{
   background:var(--blue);
   background-image:
-    /* Fine grid */
     linear-gradient(var(--grid) 1px, transparent 1px),
     linear-gradient(90deg, var(--grid) 1px, transparent 1px),
-    /* Coarse grid */
     linear-gradient(var(--blue-line-soft) 1px, transparent 1px),
     linear-gradient(90deg, var(--blue-line-soft) 1px, transparent 1px),
-    /* Vignette */
     radial-gradient(ellipse at center, transparent 0%, rgba(0,0,0,.35) 100%);
   background-size:10px 10px, 10px 10px, 100px 100px, 100px 100px, 100% 100%;
   background-attachment:fixed;
@@ -49,7 +46,6 @@ body{
   position:relative;
 }
 
-/* Paper fold lines */
 body::before{
   content:"";
   position:fixed;
@@ -61,7 +57,6 @@ body::before{
     linear-gradient(90deg, transparent 66.6%, rgba(255,255,255,.03) 66.6%, rgba(255,255,255,.03) 66.7%, transparent 66.7%);
 }
 
-/* Noise */
 body::after{
   content:"";
   position:fixed;
@@ -73,7 +68,6 @@ body::after{
   mix-blend-mode:overlay;
 }
 
-/* ===== SHEET ===== */
 .sheet{
   position:relative;
   z-index:2;
@@ -85,7 +79,6 @@ body::after{
   padding:0;
 }
 
-/* ===== SHEET HEADER (title block) ===== */
 .titleblock{
   border-bottom:1.5px solid var(--ink);
   display:grid;
@@ -135,7 +128,6 @@ body::after{
 }
 .tb-sub b{color:var(--ink);font-weight:600}
 
-/* Title block info cell */
 .titleblock-side{
   display:grid;
   grid-template-rows:repeat(4,1fr);
@@ -167,7 +159,6 @@ body::after{
 }
 .tb-cell .v.ok{color:var(--accent)}
 
-/* ===== DIMENSION LINE (dekoratif) ===== */
 .dim{
   display:flex;
   align-items:center;
@@ -195,14 +186,12 @@ body::after{
   gap:6px;
 }
 
-/* ===== SECTION ===== */
 .section{
   padding:24px 24px 26px;
   border-bottom:1px solid var(--blue-line);
   position:relative;
 }
 
-/* Corner registration marks */
 .section::before,
 .section::after{
   content:"+";
@@ -258,7 +247,6 @@ body::after{
   max-width:600px;
 }
 
-/* ===== FIELD ===== */
 .field{
   margin-bottom:18px;
   position:relative;
@@ -336,7 +324,6 @@ body::after{
   color:var(--blue);
 }
 
-/* ===== BUTTON ===== */
 .btn{
   display:grid;
   grid-template-columns:auto 1fr auto;
@@ -416,7 +403,6 @@ body::after{
   transform:translate(5px,-5px) !important;
 }
 
-/* ===== NOTE (callout) ===== */
 .note{
   display:grid;
   grid-template-columns:auto 1fr;
@@ -444,7 +430,6 @@ body::after{
   font-weight:700;
 }
 
-/* ===== RESPONSE ===== */
 #response{
   display:none;
   border-top:1.5px solid var(--ink);
@@ -520,7 +505,6 @@ body::after{
 #jsonBox::-webkit-scrollbar-thumb{background:var(--blue-line);border-radius:0}
 #jsonBox::-webkit-scrollbar-thumb:hover{background:var(--accent)}
 
-/* ===== REVISION TABLE (footer) ===== */
 .revtable{
   display:grid;
   grid-template-columns:60px 1fr 90px 100px;
@@ -549,7 +533,6 @@ body::after{
 .revtable .val{color:var(--ink);font-weight:700}
 .revtable .val.ok{color:var(--accent)}
 
-/* ===== SHEET FOOTER ===== */
 .sheetfoot{
   display:flex;
   justify-content:space-between;
@@ -573,7 +556,6 @@ body::after{
   letter-spacing:.1em;
 }
 
-/* ===== BELOW SHEET ===== */
 .below{
   max-width:760px;
   margin:20px auto 0;
@@ -589,7 +571,6 @@ body::after{
 }
 .below span b{color:var(--ink-dim);font-weight:700}
 
-/* ===== RESPONSIVE ===== */
 @media (max-width:600px){
   body{padding:16px 8px 40px}
 
@@ -634,7 +615,6 @@ body::after{
 
 <main class="sheet">
 
-  <!-- TITLE BLOCK -->
   <header class="titleblock">
     <div class="titleblock-main">
       <div class="tb-top">
@@ -671,7 +651,6 @@ body::after{
     </aside>
   </header>
 
-  <!-- DIMENSION LINE -->
   <div class="dim">
     <span class="label">
       <span>Overall length</span>
@@ -679,7 +658,6 @@ body::after{
     </span>
   </div>
 
-  <!-- SECTION 01 -->
   <section class="section">
     <div class="section-head">
       <span class="sec-no">01</span>
@@ -716,7 +694,6 @@ body::after{
     </div>
   </section>
 
-  <!-- SECTION 02 -->
   <section class="section">
     <div class="section-head">
       <span class="sec-no">02</span>
@@ -762,7 +739,6 @@ body::after{
     </a>
   </section>
 
-  <!-- RESPONSE -->
   <div id="response">
     <div class="response-head">
       <div class="response-title">Output · response.json</div>
@@ -774,7 +750,6 @@ body::after{
     <pre id="jsonBox"></pre>
   </div>
 
-  <!-- REVISION TABLE -->
   <div class="revtable">
     <div class="head">Rev</div>
     <div class="head">Description</div>
@@ -790,7 +765,6 @@ body::after{
     <div class="val ok">Current</div>
   </div>
 
-  <!-- SHEET FOOTER -->
   <div class="sheetfoot">
     <span>Ujang Karbu · Engineering Division</span>
     <span class="stamp">VERIFIED</span>
@@ -799,7 +773,6 @@ body::after{
 
 </main>
 
-<!-- BELOW SHEET -->
 <div class="below">
   <span>Drawn by: <b>UJK Studio</b></span>
   <span>Checked: <b>QA Pass</b></span>
@@ -876,7 +849,7 @@ btnVerify.addEventListener('click', async () => {
     const res = await fetch('/api/satriam/verify-link', {
       method:'POST',
       headers:{'Content-Type': 'application/json'},
-      body: JSON.stringify({email, magicLink: link})
+      body: JSON.stringify({email, link})
     });
     const data = await res.json();
     showResponse(data);
