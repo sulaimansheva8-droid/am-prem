@@ -1,13 +1,23 @@
 const express = require('express');
 const axios = require('axios');
 const crypto = require('crypto');
-const zlib = require('zlib');
 
 const app = express();
-app.use(express.json());
+app.use(express.json({ limit: '1mb' }));
+
+// CORS — allow same-origin + any (biar gampang akses dari Vercel)
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  if (req.method === 'OPTIONS') return res.sendStatus(204);
+  next();
+});
+
+// Serve static frontend kalau dijalankan lokal (Vercel handle sendiri untuk static)
 app.use(express.static(__dirname));
 
-const KEY = 'AIzaSyDtG1AU22ErnQD60AzBAcaknySiz9_CEq0';
+const KEY = process.env.FIREBASE_API_KEY || 'AIzaSyDtG1AU22ErnQD60AzBAcaknySiz9_CEq0';
 const IDENTITY_TOOLKIT = 'https://www.googleapis.com/identitytoolkit/v3/relyingparty';
 const VERIFY_PURCHASE = 'https://us-central1-alight-creative.cloudfunctions.net/verifyPurchase';
 
@@ -24,7 +34,10 @@ const OKHTTP_HEADERS = {
     'accept-encoding': 'gzip'
 };
 
-// ---------- helper ----------
+const AM_PURCHASE_TOKEN = process.env.AM_PURCHASE_TOKEN || 'mmgaobamlahbbeccfplmbkbb.AO-J1OzqG0or_GJJIx-ms8GrTm-jaglCRfhQSRPUZKpl2YspYS-oN7_94uv8RC5vQbvd_Ios2pPDStZ2n7F0hLE3FiOU7HS3R6Fquulv5xLXFECSv4ctElw';
+const AM_FIREBASE_INSTANCE_TOKEN = process.env.AM_FIREBASE_INSTANCE_TOKEN || 'cSDnCyp3T-uwp07z3tL86T:APA91bFkmvvsHw5nnqa1SBFci-99DRsKClLiETdRrVcJjS5yBx1v_FbCb1d8WhBuea_zmwnYBktyTIzcRhN4b6uNOUur9wPc0gKXmJDoZic0LhNq5V2s0xI';
+
+// ---------- helpers ----------
 function randomIP() {
     return Array.from({ length: 4 }, () => Math.floor(Math.random() * 254) + 1).join('.');
 }
@@ -45,7 +58,6 @@ function grabOobCode(raw) {
     let cleaned = String(raw).replace(/&amp;/g, '&');
     try { cleaned = decodeURIComponent(cleaned); } catch (_) {}
 
-    // coba parse query
     try {
         const qs = new URLSearchParams(cleaned.split('?')[1] || '');
         let code = qs.get('oobCode');
@@ -67,6 +79,10 @@ function grabOobCode(raw) {
         return trimmed;
     }
     return null;
+}
+
+function isValidEmail(v) {
+    return typeof v === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 }
 
 // ---------- flow ----------
@@ -117,7 +133,7 @@ async function promoteToPremium(idToken) {
     const body = {
         data: {
             productId: 'am.full.sub.annual.19q4',
-            token: 'mmgaobamlahbbeccfplmbkbb.AO-J1OzqG0or_GJJIx-ms8GrTm-jaglCRfhQSRPUZKpl2YspYS-oN7_94uv8RC5vQbvd_Ios2pPDStZ2n7F0hLE3FiOU7HS3R6Fquulv5xLXFECSv4ctElw',
+            token: AM_PURCHASE_TOKEN,
             skuType: 'subs',
             orderId: orderId
         }
@@ -125,8 +141,7 @@ async function promoteToPremium(idToken) {
 
     const headers = spoofHeaders(OKHTTP_HEADERS);
     headers['authorization'] = 'Bearer ' + idToken;
-    headers['firebase-instance-id-token'] =
-        'cSDnCyp3T-uwp07z3tL86T:APA91bFkmvvsHw5nnqa1SBFci-99DRsKClLiETdRrVcJjS5yBx1v_FbCb1d8WhBuea_zmwnYBktyTIzcRhN4b6uNOUur9wPc0gKXmJDoZic0LhNq5V2s0xI';
+    headers['firebase-instance-id-token'] = AM_FIREBASE_INSTANCE_TOKEN;
 
     const resp = await axios.post(VERIFY_PURCHASE, body, {
         headers,
@@ -142,7 +157,9 @@ async function promoteToPremium(idToken) {
 app.post('/api/satriam/send-link', async (req, res) => {
     try {
         const email = req.body?.email;
-        if (!email) return res.status(400).json({ success: false, error: 'email required' });
+        if (!isValidEmail(email)) {
+            return res.status(400).json({ success: false, error: 'email invalid' });
+        }
 
         const data = await sendVerificationEmail(email);
         res.json({ success: true, data });
@@ -157,12 +174,13 @@ app.post('/api/satriam/send-link', async (req, res) => {
 // 2. Verify link + promote premium
 app.post('/api/satriam/verify-link', async (req, res) => {
     try {
-        const { email, link } = req.body || {};
-        if (!email || !link) {
+        const { email, link, magicLink } = req.body || {};
+        const finalLink = link || magicLink;
+        if (!isValidEmail(email) || !finalLink) {
             return res.status(400).json({ success: false, error: 'email & link required' });
         }
 
-        const auth = await signInWithEmailLink(email, link);
+        const auth = await signInWithEmailLink(email, finalLink);
         const idToken = auth?.idToken;
         if (!idToken) {
             return res.status(400).json({ success: false, error: 'no idToken', data: auth });
@@ -183,5 +201,8 @@ app.post('/api/satriam/verify-link', async (req, res) => {
         });
     }
 });
+
+// Health check
+app.get('/api/health', (req, res) => res.json({ ok: true, ts: Date.now() }));
 
 module.exports = app;
