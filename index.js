@@ -5,7 +5,7 @@ const crypto = require('crypto');
 const app = express();
 app.use(express.json({ limit: '1mb' }));
 
-// CORS — allow same-origin + any (biar gampang akses dari Vercel)
+// CORS
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -14,8 +14,8 @@ app.use((req, res, next) => {
   next();
 });
 
-// Serve static frontend kalau dijalankan lokal (Vercel handle sendiri untuk static)
-app.use(express.static(__dirname));
+// KITA HAPUS BARIS express.static(__dirname) KARENA BISA BIKIN VERCEL CRASH
+// app.use(express.static(__dirname)); 
 
 const KEY = process.env.FIREBASE_API_KEY || 'AIzaSyDtG1AU22ErnQD60AzBAcaknySiz9_CEq0';
 const IDENTITY_TOOLKIT = 'https://www.googleapis.com/identitytoolkit/v3/relyingparty';
@@ -37,7 +37,7 @@ const OKHTTP_HEADERS = {
 const AM_PURCHASE_TOKEN = process.env.AM_PURCHASE_TOKEN || 'mmgaobamlahbbeccfplmbkbb.AO-J1OzqG0or_GJJIx-ms8GrTm-jaglCRfhQSRPUZKpl2YspYS-oN7_94uv8RC5vQbvd_Ios2pPDStZ2n7F0hLE3FiOU7HS3R6Fquulv5xLXFECSv4ctElw';
 const AM_FIREBASE_INSTANCE_TOKEN = process.env.AM_FIREBASE_INSTANCE_TOKEN || 'cSDnCyp3T-uwp07z3tL86T:APA91bFkmvvsHw5nnqa1SBFci-99DRsKClLiETdRrVcJjS5yBx1v_FbCb1d8WhBuea_zmwnYBktyTIzcRhN4b6uNOUur9wPc0gKXmJDoZic0LhNq5V2s0xI';
 
-// ---------- helpers ----------
+// Helper
 function randomIP() {
     return Array.from({ length: 4 }, () => Math.floor(Math.random() * 254) + 1).join('.');
 }
@@ -57,7 +57,6 @@ function grabOobCode(raw) {
     if (!raw) return null;
     let cleaned = String(raw).replace(/&amp;/g, '&');
     try { cleaned = decodeURIComponent(cleaned); } catch (_) {}
-
     try {
         const qs = new URLSearchParams(cleaned.split('?')[1] || '');
         let code = qs.get('oobCode');
@@ -70,10 +69,8 @@ function grabOobCode(raw) {
         }
         if (code) return code.replace(/[^a-zA-Z0-9_-]/g, '');
     } catch (_) {}
-
     const m = cleaned.match(/oobCode=([a-zA-Z0-9_-]+)/i);
     if (m) return m[1];
-
     const trimmed = raw.trim();
     if (/^[a-zA-Z0-9_-]{10,}$/.test(trimmed) && !trimmed.includes('://')) {
         return trimmed;
@@ -85,7 +82,7 @@ function isValidEmail(v) {
     return typeof v === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 }
 
-// ---------- flow ----------
+// Flow
 async function sendVerificationEmail(email) {
     const createBody = { identifier: email, continueUri: 'http://localhost' };
     const oobBody = {
@@ -103,13 +100,13 @@ async function sendVerificationEmail(email) {
     await axios.post(
         `${IDENTITY_TOOLKIT}/createAuthUri?key=${KEY}`,
         createBody,
-        { headers: spoofHeaders(ANDROID_HEADERS), timeout: 15000 }
+        { headers: spoofHeaders(ANDROID_HEADERS), timeout: 8000 } // Timeout lebih aman
     );
 
     const resp = await axios.post(
         `${IDENTITY_TOOLKIT}/getOobConfirmationCode?key=${KEY}`,
         oobBody,
-        { headers: spoofHeaders(ANDROID_HEADERS), timeout: 15000 }
+        { headers: spoofHeaders(ANDROID_HEADERS), timeout: 8000 }
     );
     return resp.data;
 }
@@ -121,7 +118,7 @@ async function signInWithEmailLink(email, rawLink) {
     const resp = await axios.post(
         `${IDENTITY_TOOLKIT}/emailLinkSignin?key=${KEY}`,
         { email, oobCode, clientType: 'CLIENT_TYPE_ANDROID' },
-        { headers: spoofHeaders(ANDROID_HEADERS), timeout: 15000 }
+        { headers: spoofHeaders(ANDROID_HEADERS), timeout: 8000 }
     );
     return resp.data;
 }
@@ -145,15 +142,13 @@ async function promoteToPremium(idToken) {
 
     const resp = await axios.post(VERIFY_PURCHASE, body, {
         headers,
-        timeout: 15000,
+        timeout: 8000,
         decompress: true
     });
     return { orderId, data: resp.data };
 }
 
-// ---------- endpoint ----------
-
-// 1. Kirim magic link
+// Endpoints
 app.post('/api/satriam/send-link', async (req, res) => {
     try {
         const email = req.body?.email;
@@ -164,14 +159,15 @@ app.post('/api/satriam/send-link', async (req, res) => {
         const data = await sendVerificationEmail(email);
         res.json({ success: true, data });
     } catch (err) {
+        // Tampilkan error yang lebih jelas
+        const errorMsg = err.response?.data?.error?.message || err.response?.data || err.message;
         res.status(err.response?.status || 500).json({
             success: false,
-            error: err.response?.data || err.message
+            error: errorMsg
         });
     }
 });
 
-// 2. Verify link + promote premium
 app.post('/api/satriam/verify-link', async (req, res) => {
     try {
         const { email, link, magicLink } = req.body || {};
@@ -195,14 +191,14 @@ app.post('/api/satriam/verify-link', async (req, res) => {
             promote: promote.data
         });
     } catch (err) {
+        const errorMsg = err.response?.data?.error?.message || err.response?.data || err.message;
         res.status(err.response?.status || 500).json({
             success: false,
-            error: err.response?.data || err.message
+            error: errorMsg
         });
     }
 });
 
-// Health check
 app.get('/api/health', (req, res) => res.json({ ok: true, ts: Date.now() }));
 
 module.exports = app;
