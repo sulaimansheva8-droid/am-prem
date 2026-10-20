@@ -196,4 +196,5 @@ app.post('/api/satriam/verify-link', async (req, res) => {
 
 app.get('/api/health', (req, res) => res.json({ ok: true, ts: Date.now() }));
 
-module.exports = app;
+// VERCEL LEBIH SUKA FORMAT INI UNTUK FILE DI ROOT
+export default app;
