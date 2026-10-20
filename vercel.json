@@ -1,14 +1,9 @@
 {
   "version": 2,
   "builds": [
-    {
-      "src": "index.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "index.html",
-      "use": "@vercel/static"
-    }
+    { "src": "index.html", "use": "@vercel/static" },
+    { "src": "index.js", "use": "@vercel/node" },
+    { "src": "music.mp3", "use": "@vercel/static" }
   ],
   "routes": [
     { "src": "/api/(.*)", "dest": "index.js" },
