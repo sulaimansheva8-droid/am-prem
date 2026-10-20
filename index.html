@@ -9,6 +9,7 @@
 <meta name="referrer" content="no-referrer">
 <title>AMP Panel — Control Plane</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23A8E6A3' stroke='%230A0A0A' stroke-width='6'/><text x='50' y='72' font-size='60' font-weight='900' fill='%230A0A0A' text-anchor='middle' font-family='monospace'>⚡</text></svg>">
+<link rel="manifest" href="/manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
@@ -294,6 +295,38 @@
     .tab svg{width:16px;height:16px;}
     .info-card .val{font-size:18px;}
   }
+
+  /* ==================== NEW: MODAL ==================== */
+  .modal-bg{position:fixed;inset:0;background:rgba(10,10,10,.6);z-index:9990;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);}
+  .modal-bg.on{display:flex;animation:fadeIn .25s;}
+  @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+  .modal{background:var(--white);border:var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);max-width:420px;width:100%;max-height:85vh;overflow-y:auto;padding:24px 20px;position:relative;animation:popIn .35s cubic-bezier(.22,1.4,.36,1);}
+  @keyframes popIn{from{opacity:0;transform:scale(.92);}to{opacity:1;transform:scale(1);}}
+  .modal .close-x{position:absolute;top:14px;right:14px;width:38px;height:38px;background:var(--bg);border:2.5px solid var(--ink);border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+  .modal .close-x svg{width:18px;height:18px;stroke:var(--ink);stroke-width:3;fill:none;stroke-linecap:round;}
+  .modal h3{font-size:20px;font-weight:900;letter-spacing:-.5px;margin-bottom:6px;padding-right:40px;}
+  .modal .sub{font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:var(--gray);letter-spacing:.5px;margin-bottom:18px;}
+  .modal .step-list{display:flex;flex-direction:column;gap:14px;margin-bottom:18px;}
+  .modal .step-item{display:flex;gap:12px;align-items:flex-start;padding:12px;background:var(--bg);border:2px solid var(--ink);border-radius:var(--radius-md);}
+  .modal .step-item .n{width:32px;height:32px;background:var(--accent);border:2.5px solid var(--ink);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:14px;font-weight:900;flex-shrink:0;}
+  .modal .step-item .txt{flex:1;font-size:13px;font-weight:600;line-height:1.5;}
+  .modal .step-item .txt b{font-weight:900;display:block;margin-bottom:2px;}
+  .modal .modal-btns{display:flex;gap:10px;}
+  .modal .modal-btns .btn{height:48px;font-size:13px;}
+
+  /* ==================== NEW: HISTORY ==================== */
+  .history-list{display:flex;flex-direction:column;gap:8px;max-height:300px;overflow-y:auto;}
+  .history-item{display:flex;gap:10px;align-items:center;padding:10px 12px;background:var(--bg);border:2px solid var(--ink);border-radius:10px;font-size:12px;}
+  .history-item .hi-txt{flex:1;min-width:0;font-family:'Space Mono',monospace;font-size:11px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .history-item .hi-meta{font-family:'Space Mono',monospace;font-size:9.5px;color:var(--gray);font-weight:700;flex-shrink:0;}
+  .history-item .hi-btn{width:32px;height:32px;background:var(--white);border:2px solid var(--ink);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;}
+  .history-item .hi-btn svg{width:14px;height:14px;stroke:var(--ink);stroke-width:2.5;fill:none;stroke-linecap:round;stroke-linejoin:round;}
+  .history-empty{text-align:center;padding:20px;color:var(--gray);font-family:'Space Mono',monospace;font-size:11px;font-weight:700;}
+
+  /* ==================== NEW: BULK COPY ==================== */
+  .bulk-actions{display:flex;gap:8px;margin-bottom:12px;}
+  .bulk-actions .btn{height:44px;font-size:12px;box-shadow:var(--shadow-sm);}
+  .bulk-actions .btn:active{transform:translate(3px,3px);box-shadow:0 0 0 var(--ink);}
 </style>
 </head>
 <body>
@@ -303,6 +336,55 @@
     <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div><div class="blob b4"></div>
   </div>
   <div class="grid-bg"></div>
+</div>
+
+<!-- MODAL: Instruksi Import Preset -->
+<div class="modal-bg" id="modalImport">
+  <div class="modal">
+    <button class="close-x" onclick="closeModal('modalImport')">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+    </button>
+    <h3>📥 Cara Import Preset</h3>
+    <div class="sub">ikuti langkah berikut</div>
+    <div class="step-list">
+      <div class="step-item">
+        <div class="n">1</div>
+        <div class="txt"><b>File sudah didownload</b>Cek folder Downloads / File Manager HP kamu.</div>
+      </div>
+      <div class="step-item">
+        <div class="n">2</div>
+        <div class="txt"><b>Buka Alight Motion</b>Lalu tap menu <b>Projects</b> atau <b>Preset</b>.</div>
+      </div>
+      <div class="step-item">
+        <div class="n">3</div>
+        <div class="txt"><b>Tap tombol Import (+)</b>Pilih file <b>.xml</b> atau <b>.zip</b> yang tadi didownload.</div>
+      </div>
+      <div class="step-item">
+        <div class="n">4</div>
+        <div class="txt"><b>Selesai! 🎉</b>Preset langsung tersedia di library kamu.</div>
+      </div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn btn-secondary" onclick="closeModal('modalImport')" style="flex:1;">Tutup</button>
+      <button class="btn btn-primary" onclick="dontShowImportAgain();closeModal('modalImport')" style="flex:1.4;font-size:12px;">Jangan tampilkan lagi</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Riwayat -->
+<div class="modal-bg" id="modalHistory">
+  <div class="modal">
+    <button class="close-x" onclick="closeModal('modalHistory')">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+    </button>
+    <h3>🕓 Riwayat Pencarian</h3>
+    <div class="sub">20 pencarian terakhir</div>
+    <div class="history-list" id="historyList"></div>
+    <div class="modal-btns" style="margin-top:14px;">
+      <button class="btn btn-secondary" onclick="clearHistory()" style="flex:1;">Hapus Semua</button>
+      <button class="btn btn-primary" onclick="closeModal('modalHistory')" style="flex:1;">Tutup</button>
+    </div>
+  </div>
 </div>
 
 <div class="toast-wrap" id="toastWrap"></div>
@@ -340,6 +422,18 @@
       <div class="sidebar-item" onclick="switchTab('am'); closeSidebar();">
         <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
         AM Finder
+      </div>
+    </div>
+
+    <div class="sidebar-group">
+      <div class="lbl">TOOLS</div>
+      <div class="sidebar-item" onclick="openHistoryModal(); closeSidebar();">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+        Riwayat Pencarian
+      </div>
+      <div class="sidebar-item" onclick="openImportModal(); closeSidebar();">
+        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+        Cara Import Preset
       </div>
     </div>
 
@@ -892,11 +986,11 @@
   }
 
   /* ============================================================
-     COOLDOWN
+     COOLDOWN (UPDATED: localStorage)
      ============================================================ */
   let cdInterval = null;
-  function getCooldown(){ try{ const d = JSON.parse(sessionStorage.getItem(COOLDOWN_KEY) || 'null'); if(!d || !d.until) return null; if(Date.now() >= d.until) return null; return d; }catch{ return null; } }
-  function setCooldown(url){ const until = Date.now() + COOLDOWN_MS; sessionStorage.setItem(COOLDOWN_KEY, JSON.stringify({ until, lastUrl: url, set: Date.now() })); }
+  function getCooldown(){ try{ const d = JSON.parse(localStorage.getItem(COOLDOWN_KEY) || 'null'); if(!d || !d.until) return null; if(Date.now() >= d.until) return null; return d; }catch{ return null; } }
+  function setCooldown(url){ const until = Date.now() + COOLDOWN_MS; localStorage.setItem(COOLDOWN_KEY, JSON.stringify({ until, lastUrl: url, set: Date.now() })); }
   function formatTime(ms){ const t = Math.ceil(ms/1000); return String(Math.floor(t/60)).padStart(2,'0') + ':' + String(t%60).padStart(2,'0'); }
   function updateCooldownUI(){
     const cd = getCooldown();
@@ -1169,7 +1263,10 @@
       updateCooldownUI();
       startCdWatch();
       const n = (result.presetLinks || []).length;
+      addHistory(url, n);
+      window.__lastPresets = result.presetLinks || [];
       toast('success', `${n} Preset ditemukan!`, `Cooldown ${COOLDOWN_MINUTES} menit`);
+      if(n > 0){ setTimeout(() => showImportModalOnce(), 2000); }
     }catch(err){
       hideLoading();
       addFailed(1);
@@ -1224,6 +1321,14 @@
       html += `<div style="text-align:center;padding:30px 20px;"><div style="font-size:48px;margin-bottom:10px;">🔍</div><h4 style="font-size:15px;font-weight:900;">Tidak Ada Preset</h4><p style="font-size:12px;color:var(--gray);">Video ini gak punya link preset.</p></div>`;
     } else {
       html += `<div class="section-title green" style="margin-top:16px;"><div class="num">🎁</div><div><h3>${presets.length} Preset</h3><p>klik download</p></div></div>`;
+      if(presets.length > 1){
+        html += `<div class="bulk-actions">
+          <button class="btn btn-primary" onclick="copyAllPresets()" style="flex:1;">
+            <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            Copy Semua Link (${presets.length})
+          </button>
+        </div>`;
+      }
       html += '<div class="preset-list">';
       presets.forEach(p => {
         const tl = p.type === '5mb' ? '5MB' : (p.type === 'xml' ? 'XML' : p.type);
@@ -1244,7 +1349,7 @@
               </div>
             </div>
             <div class="actions">
-              <button class="btn btn-primary amber" onclick="window.open('${escapeHtml(p.url)}','_blank')">
+              <button class="btn btn-primary amber" onclick="window.open('${escapeHtml(p.url)}','_blank');window.__dl=1;showImportModalOnce();">
                 <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                 Download
               </button>
@@ -1262,6 +1367,144 @@
   }
   function formatNum(n){ if(n == null || isNaN(n)) return '-'; n = Number(n); if(n >= 1e9) return (n/1e9).toFixed(1) + 'B'; if(n >= 1e6) return (n/1e6).toFixed(1) + 'M'; if(n >= 1e3) return (n/1e3).toFixed(1) + 'K'; return String(n); }
   window.__at = () => toast('success', 'Link ter-copy!', '');
+
+  /* ============================================================
+     NEW: MODAL SYSTEM
+     ============================================================ */
+  function openModal(id){
+    const m = document.getElementById(id);
+    if(m) m.classList.add('on');
+    beep(1000, .05, .02);
+  }
+  function closeModal(id){
+    const m = document.getElementById(id);
+    if(m) m.classList.remove('on');
+    beep(700, .05, .02);
+  }
+  window.openModal = openModal;
+  window.closeModal = closeModal;
+
+  document.querySelectorAll('.modal-bg').forEach(m => {
+    m.addEventListener('click', (e) => {
+      if(e.target === m) m.classList.remove('on');
+    });
+  });
+  document.addEventListener('keydown', (e) => {
+    if(e.key === 'Escape') document.querySelectorAll('.modal-bg.on').forEach(m => m.classList.remove('on'));
+  });
+
+  /* ============================================================
+     NEW: IMPORT INSTRUCTION MODAL
+     ============================================================ */
+  const IMPORT_HIDE_KEY = 'amp_hide_import_modal';
+  function showImportModalOnce(){
+    try{
+      if(localStorage.getItem(IMPORT_HIDE_KEY) === '1') return;
+      setTimeout(() => openModal('modalImport'), 1500);
+    }catch{}
+  }
+  function dontShowImportAgain(){
+    try{ localStorage.setItem(IMPORT_HIDE_KEY, '1'); }catch{}
+    toast('success', 'OK!', 'Modal tidak akan muncul lagi');
+  }
+  window.openImportModal = () => openModal('modalImport');
+  window.dontShowImportAgain = dontShowImportAgain;
+
+  /* ============================================================
+     NEW: HISTORY (RIWAYAT PENCARIAN)
+     ============================================================ */
+  const HISTORY_KEY = 'amp_history';
+  const HISTORY_MAX = 20;
+
+  function getHistory(){
+    try{ return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); }catch{ return []; }
+  }
+  function setHistory(arr){ try{ localStorage.setItem(HISTORY_KEY, JSON.stringify(arr)); }catch{} }
+  function addHistory(url, count){
+    const list = getHistory();
+    list.unshift({ url, count, ts: Date.now() });
+    setHistory(list.slice(0, HISTORY_MAX));
+  }
+  function clearHistory(){
+    if(!confirm('Hapus semua riwayat?')) return;
+    localStorage.removeItem(HISTORY_KEY);
+    renderHistory();
+    toast('info', 'Riwayat dihapus', '');
+  }
+  function renderHistory(){
+    const list = document.getElementById('historyList');
+    if(!list) return;
+    const data = getHistory();
+    if(!data.length){
+      list.innerHTML = '<div class="history-empty">Belum ada riwayat pencarian</div>';
+      return;
+    }
+    list.innerHTML = data.map((h, i) => {
+      const ago = timeAgo(h.ts);
+      return `
+        <div class="history-item">
+          <div class="hi-txt">${escapeHtml(h.url)}</div>
+          <div class="hi-meta">${h.count}🎁<br>${ago}</div>
+          <button class="hi-btn" onclick="replayHistory(${i})" title="Ulangi">
+            <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"></path><polyline points="3 3 3 8 8 8"></polyline></svg>
+          </button>
+        </div>
+      `;
+    }).join('');
+  }
+  function replayHistory(i){
+    const list = getHistory();
+    const h = list[i];
+    if(!h) return;
+    const ttInput = document.getElementById('ttInput');
+    if(ttInput){ ttInput.value = h.url; ttInput.dispatchEvent(new Event('input')); }
+    closeModal('modalHistory');
+    switchTab('am');
+    toast('info', 'Dimuat ulang', h.url);
+  }
+  function timeAgo(ts){
+    const d = Math.floor((Date.now() - ts) / 1000);
+    if(d < 60) return d + 's';
+    if(d < 3600) return Math.floor(d/60) + 'm';
+    if(d < 86400) return Math.floor(d/3600) + 'j';
+    return Math.floor(d/86400) + 'h';
+  }
+  window.openHistoryModal = () => { renderHistory(); openModal('modalHistory'); };
+  window.clearHistory = clearHistory;
+  window.replayHistory = replayHistory;
+
+  /* ============================================================
+     NEW: BULK COPY PRESET
+     ============================================================ */
+  function copyAllPresets(){
+    if(!window.__lastPresets || !window.__lastPresets.length){
+      toast('warn', 'Tidak ada preset', 'Scan TikTok dulu');
+      return;
+    }
+    const txt = window.__lastPresets.map((p, i) => {
+      const label = p.type === '5mb' ? '5MB' : (p.type === 'xml' ? 'XML' : (p.type || 'FILE'));
+      return `${i+1}. [${label}] ${p.title || 'Preset'}\n   ${p.url}`;
+    }).join('\n\n');
+    navigator.clipboard.writeText(txt).then(() => {
+      toast('success', `Tercopy ${window.__lastPresets.length} link!`, '');
+      beep(1200, .08, .03);
+    }).catch(() => {
+      const ta = document.createElement('textarea');
+      ta.value = txt; document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); ta.remove();
+      toast('success', 'Tercopy!', '');
+    });
+  }
+  window.copyAllPresets = copyAllPresets;
+
+  /* ============================================================
+     NEW: PWA SERVICE WORKER REGISTER
+     ============================================================ */
+  if('serviceWorker' in navigator){
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    });
+  }
 
   goPanel(1);
 
